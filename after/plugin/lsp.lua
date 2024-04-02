@@ -1,5 +1,5 @@
 local lsp_zero = require('lsp-zero')
-
+require('lspconfig').intelephense.setup({})
 lsp_zero.on_attach(function(client, bufnr)
   -- see :help lsp-zero-keybindings
   -- to learn the available actions
@@ -15,11 +15,34 @@ require('mason-lspconfig').setup({
     lsp_zero.default_setup,
   },
 })
-local cmp = require('cmp');
-local cmp_select = {behavior = cmp.SelectBehavior.Select};
-local cmp_mappings = lsp_zero.defaults.cmp_mappings({
-	['<C-p>'] = cmp.mapping.select_prev_item(cmp_select),
-	['<C-n>'] = cmp.mapping.select_next_item(cmp_select),
-	['<C-Space>'] = cmp.mapping.confirm({ select = true }),
---	['<C-S>'] = cmp.mapping.complete,
+local cmp = require('cmp')
+cmp.setup({
+  sources = {
+    {name = 'nvim_lsp'},
+  },
+  mapping = {
+    ['<C-Space>'] = cmp.mapping.confirm({select = false}),
+    ['<C-e>'] = cmp.mapping.abort(),
+    ['<Up>'] = cmp.mapping.select_prev_item({behavior = 'select'}),
+    ['<Down>'] = cmp.mapping.select_next_item({behavior = 'select'}),
+    ['<C-p>'] = cmp.mapping(function()
+      if cmp.visible() then
+        cmp.select_prev_item({behavior = 'insert'})
+      else
+        cmp.complete()
+      end
+    end),
+    ['<C-n>'] = cmp.mapping(function()
+      if cmp.visible() then
+        cmp.select_next_item({behavior = 'insert'})
+      else
+        cmp.complete()
+      end
+    end),
+  },
+  snippet = {
+    expand = function(args)
+      require('luasnip').lsp_expand(args.body)
+    end,
+  },
 })
